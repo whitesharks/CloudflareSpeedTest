@@ -64,8 +64,6 @@ func convertToString(data []CloudflareIPData) [][]string {
 var pingTime int
 var pingRoutine int
 
-var ipEndWith uint8 = 0
-
 type progressEvent int
 
 const (
@@ -74,7 +72,7 @@ const (
 	NormalPing
 )
 
-const url string = "https://speed.cloudflare.com/__down?bytes=1000000000"
+var url string
 
 var downloadTestTime time.Duration
 
@@ -89,9 +87,36 @@ var failTime int
 
 type CloudflareIPDataSet []CloudflareIPData
 
-func initipEndWith() {
+func initRandSeed() {
 	rand.Seed(time.Now().UnixNano())
-	ipEndWith = uint8(rand.Intn(254) + 1)
+}
+
+func randipEndWith() uint8 {
+	return uint8(rand.Intn(254) + 1)
+}
+
+func GetRandomString() string {
+	str := "0123456789abcdef"
+	bytes := []byte(str)
+	result := []byte{}
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	for i := 0; i < 4; i++ {
+		result = append(result, bytes[r.Intn(len(bytes))])
+	}
+	return string(result)
+}
+
+func ipPadding(ip string) string {
+	var ipLength int
+	var ipPrint string
+	ipPrint = ip
+	ipLength = len(ipPrint)
+	if ipLength < 15 {
+		for i := 0; i <= 15-ipLength; i++ {
+			ipPrint += " "
+		}
+	}
+	return ipPrint
 }
 
 func handleProgressGenerator(pb *pb.ProgressBar) func(e progressEvent) {
